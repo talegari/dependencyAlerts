@@ -16,7 +16,7 @@
 #
 ################################################################################
 
-message("\n----\nSetting up 'DependencyAlters' ...")
+message("\n----\nSetting up 'DependencyAlerts' ...")
 
 ca = commandArgs(trailingOnly = TRUE)
 basePath = ca[1]
@@ -37,7 +37,7 @@ if(!("pacman" %in% installed.packages()[,1])){
 pacman::p_load("tidyverse", "pkggraph", "safer"
                , "curl", "futile.logger", "devtools"
 )
-if(!pacman::p_exists("sidekicks")){
+if(!pacman::p_exists("sidekicks", local = TRUE)){
   devtools::install_github("talegari/sidekicks")
 }
 
