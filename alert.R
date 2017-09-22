@@ -44,13 +44,19 @@ if(!curl::has_internet()){
   stop("No internet")
 }
 
-# read previous depTable
+# read previous depTable and pkglist
 depTablePath = file.path(basePath, "depTable")
 fileNames    = list.files(depTablePath, full.names = TRUE)
 depTableOld  = safer::retrieve_object(conn = fileNames[1])
+pkglistOld   = scan(file.path(basePath, "pkglist")
+                    , what = "character"
+                    , quiet = TRUE
+                    )
 
 # get current cran data
 suppressMessages(pkggraph::init())
+pkglistNew = rownames(packmeta)
+newPackages = setdiff(pkglistNew, pkglistOld)
 
 # look at the difference and write to file
 depTableAdded   = dplyr::setdiff(deptable, depTableOld) %>%
@@ -58,7 +64,8 @@ depTableAdded   = dplyr::setdiff(deptable, depTableOld) %>%
 depTableRemoved = dplyr::setdiff(depTableOld, deptable) %>%
   mutate(type = "deletion")
 
-depTableDiff = dplyr::bind_rows(depTableAdded, depTableRemoved)
+depTableDiff = dplyr::bind_rows(depTableAdded, depTableRemoved) %>%
+  mutate(is_pkg_1_new = pkg_1 %in% newPackages)
 
 if(nrow(depTableDiff) == 0){
   flog.info("No new dependencies found", name = "alertLog")
@@ -88,5 +95,11 @@ depTableName = file.path(basePath, "depTable", "depTable.bin") %>%
 safer::save_object(object = deptable, conn = depTableName) %>%
   invisible()
 flog.info(paste0("Renewed depTable"), name = "alertLog")
+
+# renew pkglist
+if(length(newPackages) > 0){
+  write(pkglistNew, file.path(basePath, "pkglist"), append = FALSE)
+  flog.info(paste0("Renewed pkglist"), name = "alertLog")
+}
 
 flog.info("Ended Alert check successfully", name = "alertLog")

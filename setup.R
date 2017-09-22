@@ -29,6 +29,7 @@ dir.create(basePath)
 dir.create(file.path(basePath, "depTable"))
 dir.create(file.path(basePath, "archive"))
 dir.create(file.path(basePath, "alerts"))
+invisible(file.create(file.path(basePath, "pkglist")))
 invisible(file.create(file.path(basePath, "log.log")))
 
 if(!("pacman" %in% installed.packages()[,1])){
@@ -48,9 +49,13 @@ if(!curl::has_internet()){
 }
 
 suppressMessages(pkggraph::init())
+
 depTableName = file.path(basePath, "depTable", "depTable.bin") %>%
   sidekicks::append_time()
 safer::save_object(object = deptable, conn = depTableName) %>%
   invisible()
+
+pkglist = rownames(packmeta)
+write(pkglist, file.path(basePath, "pkglist"), append = FALSE)
 
 message("done!\n----\n")
