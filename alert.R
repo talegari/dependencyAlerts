@@ -83,9 +83,10 @@ file.remove(fileNames[1]) %>% invisible()
 flog.info(paste0("Moved old depTable to archive"), name = "alertLog")
 
 
-safer::save_object(object = deptable
-                   , conn = fileNames[1] %>% sidekicks::append_time()
-                   ) %>% invisible()
+depTableName = file.path(basePath, "depTable", "depTable.bin") %>%
+  sidekicks::append_time()
+safer::save_object(object = deptable, conn = depTableName) %>%
+  invisible()
 flog.info(paste0("Renewed depTable"), name = "alertLog")
 
 flog.info("Ended Alert check successfully", name = "alertLog")
